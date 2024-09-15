@@ -1,6 +1,8 @@
 import argparse
 import easyocr
 
+def list_of_ints(arg):
+    return list(map(int, arg.split(',')))
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Process EasyOCR.")
@@ -125,7 +127,7 @@ def parse_args():
     )
     parser.add_argument(
         "--rotation_info",
-        type=list,
+        type=list_of_ints,
         default=None,
         help="Allow EasyOCR to rotate each text box and return the one with the best confident score. Eligible values are 90, 180 and 270. For example, try [90, 180 ,270] for all possible text orientations.",
     )
@@ -240,41 +242,41 @@ def parse_args():
 
 def main():
     args = parse_args()
-    reader = easyocr.Reader(lang_list=args.lang,\
-                            gpu=args.gpu,\
-                            model_storage_directory=args.model_storage_directory,\
-                            user_network_directory=args.user_network_directory,\
-                            recog_network=args.recog_network,\
-                            download_enabled=args.download_enabled,\
-                            detector=args.detector,\
-                            recognizer=args.recognizer,\
-                            verbose=args.verbose,\
+    reader = easyocr.Reader(lang_list=args.lang,
+                            gpu=args.gpu,
+                            model_storage_directory=args.model_storage_directory,
+                            user_network_directory=args.user_network_directory,
+                            recog_network=args.recog_network,
+                            download_enabled=args.download_enabled,
+                            detector=args.detector,
+                            recognizer=args.recognizer,
+                            verbose=args.verbose,
                             quantize=args.quantize)
-    for line in reader.readtext(args.file,\
-                                decoder=args.decoder,\
-                                beamWidth=args.beamWidth,\
-                                batch_size=args.batch_size,\
-                                workers=args.workers,\
-                                allowlist=args.allowlist,\
-                                blocklist=args.blocklist,\
-                                detail=args.detail,\
-                                rotation_info=args.rotation_info,\
-                                paragraph=args.paragraph,\
-                                min_size=args.min_size,\
-                                contrast_ths=args.contrast_ths,\
-                                adjust_contrast=args.adjust_contrast,\
-                                text_threshold=args.text_threshold,\
-                                low_text=args.low_text,\
-                                link_threshold=args.link_threshold,\
-                                canvas_size=args.canvas_size,\
-                                mag_ratio=args.mag_ratio,\
-                                slope_ths=args.slope_ths,\
-                                ycenter_ths=args.ycenter_ths,\
-                                height_ths=args.height_ths,\
-                                width_ths=args.width_ths,\
-                                y_ths=args.y_ths,\
-                                x_ths=args.x_ths,\
-                                add_margin=args.add_margin,\
+    for line in reader.readtext(args.file,
+                                decoder=args.decoder,
+                                beamWidth=args.beamWidth,
+                                batch_size=args.batch_size,
+                                workers=args.workers,
+                                allowlist=args.allowlist,
+                                blocklist=args.blocklist,
+                                detail=args.detail,
+                                rotation_info=args.rotation_info,
+                                paragraph=args.paragraph,
+                                min_size=args.min_size,
+                                contrast_ths=args.contrast_ths,
+                                adjust_contrast=args.adjust_contrast,
+                                text_threshold=args.text_threshold,
+                                low_text=args.low_text,
+                                link_threshold=args.link_threshold,
+                                canvas_size=args.canvas_size,
+                                mag_ratio=args.mag_ratio,
+                                slope_ths=args.slope_ths,
+                                ycenter_ths=args.ycenter_ths,
+                                height_ths=args.height_ths,
+                                width_ths=args.width_ths,
+                                y_ths=args.y_ths,
+                                x_ths=args.x_ths,
+                                add_margin=args.add_margin,
                                 output_format=args.output_format):
         print(line)
 

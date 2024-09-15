@@ -1,7 +1,6 @@
 from __future__ import print_function
 
 import torch
-import pickle
 import numpy as np
 import math
 import cv2
@@ -651,7 +650,7 @@ def get_paragraph(raw_result, x_ths=1, y_ths=0.5, mode = 'ltr'):
         min_y = min(all_y)
         max_y = max(all_y)
         height = max_y - min_y
-        box_group.append([box[1], min_x, max_x, min_y, max_y, height, 0.5*(min_y+max_y), 0]) # last element indicates group
+        box_group.append([box[1], min_x, max_x, min_y, max_y, height, 0.5 * (min_y + max_y), 0,box[-1]])  # last element indicates group
     # cluster boxes into paragraph
     current_group = 1
     while len([box for box in box_group if box[7]==0]) > 0:
@@ -676,12 +675,13 @@ def get_paragraph(raw_result, x_ths=1, y_ths=0.5, mode = 'ltr'):
                     add_box = True
                     break
             # cannot add more box, go to next group
-            if add_box==False:
+            if not add_box:
                 current_group += 1
     # arrage order in paragraph
     result = []
     for i in set(box[7] for box in box_group):
         current_box_group = [box for box in box_group if box[7]==i]
+        group_confidence = sum([box[8] for box in current_box_group]) / len(current_box_group)
         mean_height = np.mean([box[5] for box in current_box_group])
         min_gx = min([box[1] for box in current_box_group])
         max_gx = max([box[2] for box in current_box_group])
@@ -704,7 +704,7 @@ def get_paragraph(raw_result, x_ths=1, y_ths=0.5, mode = 'ltr'):
             text += ' '+best_box[0]
             current_box_group.remove(best_box)
 
-        result.append([ [[min_gx,min_gy],[max_gx,min_gy],[max_gx,max_gy],[min_gx,max_gy]], text[1:]])
+        result.append([ [[min_gx,min_gy],[max_gx,min_gy],[max_gx,max_gy],[min_gx,max_gy]], text[1:],group_confidence])
 
     return result
 
@@ -778,7 +778,9 @@ def reformat_input_batched(image, n_width=None, n_height=None):
         list of file paths, list of numpy-array, 4D numpy array,
         list of byte stream objects]
     """
-    if ((isinstance(image, np.ndarray) and len(image.shape) == 4) or isinstance(image, list)):
+    if (isinstance(image, np.ndarray) and len(image.shape) == 4) or isinstance(image, list):
+        if len(image) == 0:
+            raise ValueError("The input image array is empty.")
         # process image batches if image is list of image np arr, paths, bytes
         img, img_cv_grey = [], []
         for single_img in image:

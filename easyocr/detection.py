@@ -44,7 +44,8 @@ def test_net(canvas_size, mag_ratio, net, image, text_threshold, link_threshold,
     # forward pass
     with torch.no_grad():
         y, feature = net(x)
-
+    # remove x and feature from device, whether GPU or CPU
+    del x, feature
     boxes_list, polys_list = [], []
     for out in y:
         # make score and link map
@@ -69,6 +70,10 @@ def test_net(canvas_size, mag_ratio, net, image, text_threshold, link_threshold,
         boxes_list.append(boxes)
         polys_list.append(polys)
 
+        # remove y from device, whether GPU or CPU, and check if cuda was used before calling empty_cache() to clean up
+        del y
+        if device == 'cuda':
+            torch.cuda.empty_cache()
     return boxes_list, polys_list
 
 def get_detector(trained_model, device='cpu', quantize=True, cudnn_benchmark=False):
@@ -78,11 +83,11 @@ def get_detector(trained_model, device='cpu', quantize=True, cudnn_benchmark=Fal
         net.load_state_dict(copyStateDict(torch.load(trained_model, map_location=device)))
         if quantize:
             try:
-                torch.quantization.quantize_dynamic(net, dtype=torch.qint8, inplace=True)
+                torch.quantization.quantize_dynamic(net, inplace=True)
             except:
                 pass
     else:
-        net.load_state_dict(copyStateDict(torch.load(trained_model, map_location=device)))
+        net.load_state_dict(copyStateDict(torch.load(trained_model, map_location=device,weights_only=True)))
         net = torch.nn.DataParallel(net).to(device)
         cudnn.benchmark = cudnn_benchmark
 
