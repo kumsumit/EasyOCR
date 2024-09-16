@@ -6,6 +6,7 @@ from torchvision import models
 from collections import namedtuple
 from packaging import version
 
+torch.backends.nnpack.enabled = False
 
 def init_weights(modules):
     for m in modules:
